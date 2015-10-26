@@ -1,0 +1,8 @@
+http://www.pusheen.com/
+
+http://www.slideshare.net/pavelscherbinin/lazy-iterators
+https://www.youtube.com/watch?v=dnUM2zbTqnE
+
+https://en.wikipedia.org/wiki/Lazy_evaluation
+https://en.wikipedia.org/wiki/Iterator
+http://hop.perl.plover.com/

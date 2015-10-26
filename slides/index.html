@@ -1,0 +1,561 @@
+<!doctype html>
+<!-- vim:set ts=2 sts=2 sw=2 noet: -->
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>very iterators. so lazy. amaze!</title>
+		<meta name="author" content="Maxim Vuets">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/white.css" id="theme">
+
+		<style>
+			body {
+				background: #fcf0e4;
+				background-color: #fef2e6; }
+			.reveal pre code {
+				background: #dcdcdc;
+				color: #3f3f3f; }
+			.reveal section img {
+				border: 0;
+				box-shadow: none; }
+		</style>
+
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+		<div class="reveal"><div class="slides">
+
+			<section>
+				<h1>very iterators.<br/> so lazy. amaze!</h1>
+				<p>Maxim Vuets</p>
+				<p><small>@AmsterdamXpm</small></p>
+
+				<aside class="notes">
+					hi, it's me again (-:
+					following the best traditions - finished slides just now.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/threesome_in_box.gif"/>
+
+				<aside class="notes">
+					it's my 3rd talk at amsterdamx.pm in a row. i have a streak.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/in_cradle.gif"/>
+
+				<aside class="notes">
+					someone (malory) gave me feedback - too few cat pics.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/angry.gif"/>
+
+				<aside class="notes">
+					so - what's an iterator?
+					imagine: you are a hungry -> angry cat.
+					have to search house for food.
+					peek into kitchen, trash bin, fridge, cupboards.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/crying_on_pile_of_sweets.gif"/>
+
+				<aside class="notes">
+					too much to look into and sort out.
+					need to know where to look at, how to open cans, drawers...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/kinda_lazy.gif"/>
+
+				<aside class="notes">
+					but it's a cat. it's kinda lazy.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/eating_peeps.gif"/>
+
+				<aside class="notes">
+					you want a simple single source of food.
+					that's where iterators come in handy.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+while (<$fh>) { ... }
+
+while (readdir $dh) { ... }
+
+while (my $row = $sth->fetchrow_arrayref) { ... }
+
+while (my ($k, $v) = each %hash) { ... }
+
+while (/^#(.*)\n/g) { ... }
+
+my $n = rand();
+				</code></pre>
+
+				<aside class="notes">
+					a plenty of built-in iterators everywhere.
+					abstract complexities of accessing a data storage away from you.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/unicorn.gif"/>
+
+				<aside class="notes">
+					but before we go on, another super cool concept - closures.
+					anonymous subroutines that retain the state/environment
+					in which were created.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+my $meow = sub { say 'meow' };
+$meow->();
+				</code></pre>
+				<pre class="fragment"><code data-trim>
+sub make_utterer {
+  my $sound = shift;
+  return sub { say $sound };
+}
+
+my $purr = make_utterer('*purr~*');
+$purr->();
+				</code></pre>
+
+				<aside class="notes">
+					let's start simple - anonymous sub.
+					<hr/>
+					now make a closure.
+					also: code-as-data.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/caressing.gif"/>
+
+				<aside class="notes">
+					this is so cool! let's use it for good!
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+sub make_utterer {
+  my @sounds = qw&lt;meow purr hiss yowl>;
+  return sub { shift @sounds };
+}
+
+my $utter = make_utterer();
+say while $_ = $utter->();
+				</code></pre>
+				<aside class="notes">
+					use closure to generate an iterator. pretty simple.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/smart_cat.gif"/>
+
+				<aside class="notes">
+					let's make something more fancy and smart.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+sub make_fibocat {
+  my @last = (0, 0);
+  return sub {
+    my $next = ($last[0] + $last[1]) || 1;
+    push @last, $next;
+    shift @last;
+    return 'meow ' x $next;
+  };
+}
+
+my $fibocat = make_fibocat();
+say $fibocat->() for 1..10;
+				</code></pre>
+				<aside class="notes">
+					classy fibonacci, cat flavored.
+					infinite!
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="60%" src="img/lazy.gif"/>
+
+				<aside class="notes">
+					but also lazy - next element is computed only upon request.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/making_dough.gif"/>
+
+				<aside class="notes">
+					let's bake something more sophisticated.
+					start with a simple trivial example.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+open my $food_fh, '<', 'food.txt';
+my @food = <$food_fh>;
+close $food_fh;
+
+my @menu;
+for my $option (@food) {
+  chomp $option;
+  next if length($option) <= 8;
+  $option = "super $option meow~";
+  push @menu, $option;
+}
+
+open my $menu_fh, '>', 'menu.txt';
+print $menu_fh "$_\n" for @menu;
+close $menu_fh;
+				</code></pre>
+
+				<aside class="notes">
+					read into memory.
+					process, filter out, process, store.
+					output.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<h1>Pros</h1>
+				<ul>
+					<li>easy</li>
+					<li>quick</li>
+					<li>concerns separated</li>
+				</ul>
+				<h1>Cons</h1>
+				<ul>
+					<li>memory bound</li>
+				</ul>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/huge_bouncing_cat.gif"/>
+
+				<aside class="notes">
+					memory!
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+open my $food_fh, '<', 'food.txt';
+open my $menu_fh, '>', 'menu.txt';
+
+while (my $option = <$food_fh>) {
+  chomp $option;
+  next if length($option) <= 8;
+  $option = "super $option meow~";
+  print $menu_fh "$option\n";
+}
+
+close $menu_fh;
+close $food_fh;
+				</code></pre>
+
+				<aside class="notes">
+					process as we go, record by record.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<h1>Pros</h1>
+				<ul>
+					<li>constant memory</li>
+					<li>same performance</li>
+				</ul>
+				<h1>Cons</h1>
+				<ul>
+					<li>concerns mixed up</li>
+					<li>troublesome to maintain</li>
+				</ul>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/noodles.gif"/>
+
+				<aside class="notes">
+					noodles code!
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+my $it = reader('food.txt');
+
+$it = imap  { "super $_[0] meow~" }
+      igrep { length($_[0]) <= 8  }
+      $it;
+
+writer($it, 'menu.txt');
+				</code></pre>
+
+				<aside class="notes">
+					enter lazy iterators.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+sub reader {
+  my ($file) = @_;
+  open my $fh, '<', $file;
+  return sub {
+    my $line = <$fh>;
+    chomp $line;
+    if (!defined $line) {
+      close $fh;
+      return undef;
+    }
+    return $line;
+  };
+}
+				</code></pre>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+sub igrep(&$) {
+  my ($cb, $it) = @_;
+  return sub {
+    while (defined (my $val = $it->())) {
+      return $val if $cb->($val);
+    }
+    return undef;
+  };
+}
+				</code></pre>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+sub imap(&$) {
+  my ($cb, $it) = @_;
+  return sub {
+    my $val = $it->();
+    return undef if !defined $val;
+    return $cb->($val);
+  };
+}
+				</code></pre>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+sub writer {
+  my ($it, $file) = @_;
+  open my $fh, '>', $file;
+  while (defined (my $val = $it->())) {
+    print $fh "$val\n";
+  }
+  close $fh;
+}
+				</code></pre>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<pre><code data-trim>
+my $it = reader('food.txt');
+
+$it = imap  { "super $_[0] meow~" }
+      igrep { length($_[0]) <= 8  }
+      $it;
+
+writer($it, 'menu.txt');
+				</code></pre>
+
+				<aside class="notes">
+					review once again.
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<h1>Pros</h1>
+				<ul>
+					<li>concerns separated</li>
+					<li>constant memory</li>
+					<li>flexible code</li>
+					<li>lazy</li>
+				</ul>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="70%" src="img/so_lazy_cant_move.gif"/>
+
+				<aside class="notes">
+					so lazy!
+				</aside>
+			</section>
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<p>http://hop.perl.plover.com</p>
+				<img width="40%" src="img/hop-book.jpg"/>
+
+				<aside class="notes">
+					Higher-Order Perl by Mark Jason Dominus.
+					http://hop.perl.plover.com/
+				</aside>
+			</section>
+
+			<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+			<section>
+				<img width="50%" src="img/thank_you.gif"/>
+				<p>maxim.vuets@gmail.com</p>
+				<p>@mvuets</p>
+
+				<aside class="notes">
+					...
+				</aside>
+			</section>
+
+		</div></div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+		<script>
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: false,
+				progress: true,
+				history: true,
+				center: true,
+				transition: 'none',
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>
